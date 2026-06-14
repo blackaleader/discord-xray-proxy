@@ -1,0 +1,47 @@
+{
+  "log": {
+    "level": "info",
+    "output": "sing-box-tun.log",
+    "timestamp": true
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+      "mtu": 9000,
+      "auto_route": true,
+      "strict_route": false,
+      "stack": "system"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "socks",
+      "tag": "xray-socks5",
+      "server": "127.0.0.1",
+      "server_port": 10808,
+      "version": "5"
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "ip_cidr": ["127.0.0.0/8", "::1/128", "172.19.0.0/30"],
+        "action": "route",
+        "outbound": "direct"
+      },
+      {
+        "process_name": ["Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe"],
+        "action": "route",
+        "outbound": "xray-socks5"
+      }
+    ],
+    "final": "direct",
+    "auto_detect_interface": true
+  }
+}

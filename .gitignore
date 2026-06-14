@@ -1,0 +1,12 @@
+# Build artifacts
+bin/
+*.obj
+*.exp
+*.pdb
+
+# Logs
+*.log
+
+# VS temp files
+.vs/
+*.user
