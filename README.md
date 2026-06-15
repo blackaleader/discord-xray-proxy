@@ -210,7 +210,31 @@ The real function pointers are saved via `GetProcAddress` **before** any patchin
 
 ---
 
+## Configuration
+
+Open `start_tun.bat` and edit the two lines at the top:
+
+```bat
+set "PROXY_HOST=127.0.0.1"
+set "PROXY_PORT=10808"
+```
+
+| Setting | Default | Notes |
+|---|---|---|
+| `PROXY_HOST` | `127.0.0.1` | Almost always loopback |
+| `PROXY_PORT` | `10808` | v2rayN default. Change to match your Xray SOCKS5 inbound port |
+
+Common ports: `10808` (v2rayN), `1080` (classic SOCKS5), `7890` (Clash).
+
+The script auto-generates `sing-box-tun.json` on every run using these values, so you never need to edit the JSON directly.
+
+---
+
 ## Troubleshooting
+
+**`ConnectionReset` / `update-failure` errors on Discord startup**
+- Your proxy port is wrong. Open `start_tun.bat` and set `PROXY_PORT` to the port your Xray/v2rayN SOCKS5 inbound is actually listening on.
+- Check with: `netstat -ano | findstr LISTENING` — find the port your proxy is on.
 
 **sing-box fails to start**
 - Make sure you are running as Administrator

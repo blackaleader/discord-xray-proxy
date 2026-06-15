@@ -20,6 +20,12 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
+REM ══════════════════════════════════════════════════════════════════════
+REM  USER CONFIGURATION  ─  edit these two lines to match your setup
+set "PROXY_HOST=127.0.0.1"
+set "PROXY_PORT=10808"
+REM ══════════════════════════════════════════════════════════════════════
+
 REM ── All paths relative to this script's directory ──────────────────────
 set "ROOT=%~dp0"
 set "SINGBOX=%ROOT%tools\sing-box.exe"
@@ -38,14 +44,41 @@ if not exist "%ROOT%tools\wintun.dll" (
     pause & exit /b 1
 )
 
-REM ── Verify Xray is running on 10808 ────────────────────────────────────
-netstat -ano | findstr /C:"127.0.0.1:10808" | findstr LISTENING >nul 2>&1
+REM ── Verify Xray is running on the configured port ─────────────────────
+netstat -ano | findstr /C:"%PROXY_HOST%:%PROXY_PORT%" | findstr LISTENING >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Xray / v2rayN is NOT listening on 127.0.0.1:10808
-    echo         Start v2rayN first, then run this script again.
+    echo [ERROR] No proxy detected on %PROXY_HOST%:%PROXY_PORT%
+    echo.
+    echo  Fix: open start_tun.bat and update PROXY_HOST / PROXY_PORT
+    echo  to match your Xray / v2rayN SOCKS5 inbound port.
+    echo.
+    echo  Common ports:  10808 ^(v2rayN default^)  1080  7890
     pause & exit /b 1
 )
-echo [+] Xray detected on 127.0.0.1:10808
+echo [+] Proxy detected on %PROXY_HOST%:%PROXY_PORT%
+
+REM ── Write sing-box config with the correct proxy address ───────────────
+(
+echo {
+echo   "log": { "level": "info", "output": "logs/sing-box-tun.log", "timestamp": true },
+echo   "inbounds": [{
+echo     "type": "tun", "tag": "tun-in",
+echo     "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+echo     "mtu": 9000, "auto_route": true, "strict_route": false, "stack": "system"
+echo   }],
+echo   "outbounds": [
+echo     { "type": "socks", "tag": "xray-socks5", "server": "%PROXY_HOST%", "server_port": %PROXY_PORT%, "version": "5" },
+echo     { "type": "direct", "tag": "direct" }
+echo   ],
+echo   "route": {
+echo     "rules": [
+echo       { "ip_cidr": ["127.0.0.0/8", "::1/128", "172.19.0.0/30"], "action": "route", "outbound": "direct" },
+echo       { "process_name": ["Discord.exe", "DiscordPTB.exe", "DiscordCanary.exe"], "action": "route", "outbound": "xray-socks5" }
+echo     ],
+echo     "final": "direct", "auto_detect_interface": true
+echo   }
+echo }
+) > "%CONFIG%"
 
 REM ── Create logs folder ─────────────────────────────────────────────────
 if not exist "%LOGDIR%" mkdir "%LOGDIR%"
