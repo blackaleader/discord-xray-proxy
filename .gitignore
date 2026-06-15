@@ -4,9 +4,13 @@ bin/
 *.exp
 *.pdb
 
-# Logs
+# Runtime logs
+logs/
 *.log
 
-# VS temp files
+# VS temp
 .vs/
 *.user
+
+# Keep tools/ (sing-box.exe, wintun.dll bundled for portability)
+!tools/

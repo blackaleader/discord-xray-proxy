@@ -1,7 +1,7 @@
 {
   "log": {
     "level": "info",
-    "output": "sing-box-tun.log",
+    "output": "logs/sing-box-tun.log",
     "timestamp": true
   },
   "inbounds": [

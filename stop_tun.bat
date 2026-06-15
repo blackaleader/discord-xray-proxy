@@ -5,5 +5,5 @@ if %errorlevel% neq 0 (
     exit /b
 )
 taskkill /f /im sing-box.exe >nul 2>&1
-echo [+] TUN stopped. Discord traffic is now direct again.
+echo [+] TUN stopped. Discord traffic is now direct.
 timeout /t 2 /nobreak >nul

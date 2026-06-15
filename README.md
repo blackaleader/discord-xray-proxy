@@ -50,33 +50,43 @@ Discord (any process, any sandbox)
 | Requirement | Notes |
 |---|---|
 | Windows 10 / 11 (x64) | Tested on Windows 11 |
-| [v2rayN](https://github.com/2dust/v2rayN) with sing-box | sing-box + wintun.dll must be in `v2rayN\bin\sing_box\` |
 | Xray / V2Ray running | SOCKS5 inbound on `127.0.0.1:10808` with `"udp": true` |
-| Visual Studio 2019 / 2022 | Only needed if you want to build the C++ DLL from source |
 | Administrator privileges | Required for TUN adapter creation |
+| Visual Studio 2019 / 2022 | **Only** needed if you want to rebuild the C++ DLL from source |
+
+> **sing-box and wintun.dll are bundled** in the `tools/` folder — no v2rayN installation required to run.
 
 ---
 
 ## Project Structure
 
 ```
-discord-socks5-proxy/
+discord-xray-proxy/
 │
-├── sing-box-tun.json          ← sing-box config (TUN → Xray SOCKS5)
-├── start_tun.bat              ← ONE-CLICK launcher (run as Admin)
+├── start_tun.bat              ← ONE-CLICK launcher (run as Admin)  ← START HERE
 ├── stop_tun.bat               ← Stop the TUN when done
-├── launch_discord_proxied.bat ← Alternative: Chromium proxy flags only
+├── sing-box-tun.json          ← sing-box routing config
+├── launch_discord_proxied.bat ← Alternative: Chromium proxy flags only (no TUN)
 │
-├── src/
-│   ├── config.h               ← Proxy host/port + Discord process names
-│   ├── proxy_hook.cpp         ← C++ Winsock hook DLL source
-│   └── injector.cpp           ← C++ DLL injector / process monitor source
+├── tools/                     ← Bundled — no extra installs needed
+│   ├── sing-box.exe           ← sing-box binary (routes TUN traffic)
+│   ├── wintun.dll             ← WireGuard TUN driver for Windows
+│   ├── LICENSE-sing-box.txt
+│   └── LICENSE-wintun.txt
 │
-├── bin/                       ← Built binaries (after running build.bat)
+├── src/                       ← C++ source (optional, for rebuilding the DLL)
+│   ├── config.h
+│   ├── proxy_hook.cpp
+│   └── injector.cpp
+│
+├── bin/                       ← Built after running build.bat
 │   ├── proxy_hook.dll
 │   └── discord_proxy.exe
 │
-└── build.bat                  ← Builds the C++ DLL and injector with MSVC
+├── logs/                      ← Created at runtime
+│   └── sing-box-tun.log
+│
+└── build.bat                  ← Rebuilds C++ DLL+injector (needs MSVC)
 ```
 
 ---
@@ -84,6 +94,14 @@ discord-socks5-proxy/
 ## Quick Start (Recommended — TUN mode)
 
 This is the only method that fully proxies Discord voice UDP.
+
+> **sing-box and wintun are already bundled** in `tools/`. Just clone and run.
+
+```bash
+git clone https://github.com/blackaleader/discord-xray-proxy
+cd discord-xray-proxy
+# right-click start_tun.bat → Run as Administrator
+```
 
 ### Step 1 — Configure Xray
 
@@ -102,18 +120,7 @@ Make sure your Xray / v2rayN SOCKS5 inbound has UDP enabled:
 }
 ```
 
-### Step 2 — Find your sing-box path
-
-Check that these files exist inside your v2rayN installation:
-
-```
-v2rayN\bin\sing_box\sing-box.exe
-v2rayN\bin\sing_box\wintun.dll
-```
-
-If your v2rayN is not at the default path, open `start_tun.bat` and update the `SINGBOX` variable on line 14.
-
-### Step 3 — Start the proxy
+### Step 2 — Start the proxy
 
 Right-click `start_tun.bat` → **Run as Administrator**
 
